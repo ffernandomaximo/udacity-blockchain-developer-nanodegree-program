@@ -6,3 +6,7 @@ const block = new BlockClass.Block(prompt('enter data: ')); //Creating a block o
 block.validate().then((result) => {
 	console.log(result);
 }).catch((error) => {console.log(error)});
+
+block.getBData().then((result) => {
+	console.log(result);
+}).catch((error) => {console.log(error)});
