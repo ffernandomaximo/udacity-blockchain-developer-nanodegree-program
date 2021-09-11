@@ -37,7 +37,21 @@ class Block {
      */
     validate() {
         let self = this;
+        let comp = true;
         return new Promise((resolve, reject) => {
+            let currentHash = self.hash;//"he = 417f3c7ac7ff466d63019ced5977312ee0098174e20b7af16d8668bc0ad2a6b4";
+            if (self.body) {
+                self.hash = `${SHA256(JSON.stringify(self.body))}`
+                if (currentHash == self.hash) {
+                    resolve(true);
+                }
+                else {
+                    resolve(false);
+                }
+            }
+            else {
+                reject(Error("It is broken"));
+            }
             // Save in auxiliary variable the current block hash
                                             
             // Recalculate the hash of the Block
