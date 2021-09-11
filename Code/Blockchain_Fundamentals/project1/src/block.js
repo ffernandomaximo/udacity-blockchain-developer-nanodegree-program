@@ -15,17 +15,12 @@ class Block {
         let self = this;
         return new Promise((resolve, reject) => {
             let currentHash = self.hash;                                //"he = 417f3c7ac7ff466d63019ced5977312ee0098174e20b7af16d8668bc0ad2a6b4";
-            if (self.body) {
-                self.hash = `${SHA256(JSON.stringify(self.body))}`
-                if (currentHash == self.hash) {
-                    resolve(true);
-                }
-                else {
-                    resolve(false);
-                }
+            self.hash = `${SHA256(JSON.stringify(self.body))}`
+            if (currentHash === self.hash) {
+                resolve(true);
             }
             else {
-                reject(Error("It broke"));
+                resolve(false);
             }
         });
     }
@@ -42,7 +37,6 @@ class Block {
             }
         });
     }
-
 }
 
 module.exports.Block = Block;                                           // Exposing the Block class as a module
