@@ -14,28 +14,36 @@ class Block {
     validate() {
         let self = this;
         return new Promise((resolve, reject) => {
-            let currentHash = self.hash;                                //"he = 417f3c7ac7ff466d63019ced5977312ee0098174e20b7af16d8668bc0ad2a6b4";
-            self.hash = `${SHA256(JSON.stringify(self.body))}`
-            if (currentHash === self.hash) {
-                resolve(true);
-            }
-            else {
-                resolve(false);
+            try {
+                // Save in auxiliary variable the current block hash
+                const currentHash = self.hash;
+                self.hash = null;
+                // Recalculate the hash of the Block
+                const newHash = SHA256(JSON.stringify(self)).toString();
+                self.hash = currentHash;
+                // Comparing if the hashes changed and return true or false
+                resolve(currentHash === newHash);
+            } catch (err) {
+                reject(new Error(err)); 
             }
         });
     }
 
     getBData() {
         let self = this;
-        return new Promise((resolve, reject) => {
-            if (self.previousBlockHash != null) {
-                let dataDecoded = hex2ascii(self.body);
-                resolve(JSON.parse(dataDecoded));
-            }
-            else {
-                reject(Error("It broke"));
+        return new Promise( async (resolve, reject) => {          
+            let enc_data = self.body;       // Getting the encoded data saved in the Block                                    
+            let dec_data = hex2ascii(enc_data); // Decoding the data to retrieve the JSON representation of the object
+            let decdata_in_JSON=JSON.parse(dec_data); // Parse the data to an object to be retrieve.
+            // Resolve with the data if the object isn't the Genesis block
+            if (self.height == 0) {
+                //This is the genesis block as height == 0
+                resolve("This is the Genesis block dude");
+            } else {
+                resolve(decdata_in_JSON);
             }
         });
+
     }
 }
 
