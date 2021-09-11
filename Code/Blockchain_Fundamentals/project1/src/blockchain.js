@@ -62,9 +62,19 @@ class Blockchain {
      * that this method is a private method. 
      */
     _addBlock(block) {
-        let self = this;
-        return new Promise(async (resolve, reject) => {
-           
+        return new Promise((resolve, reject) => {
+            block.height = this.chain.length;
+            block.time = new Date().getTime().toString().slice(0,-3);
+            if (this.chain.length>0) {
+                block.previousBlockHash = this.chain[this.chain.length-1].hash;
+            }
+            else {
+                block.previousBlockHash = null;
+            }
+            block.hash = SHA256(JSON.stringify(block)).toString();
+            this.chain.push(block);
+            this.height += 1;
+            resolve(this.chain);
         });
     }
 
@@ -78,7 +88,7 @@ class Blockchain {
      */
     requestMessageOwnershipVerification(address) {
         return new Promise((resolve) => {
-            
+            resolve(address);
         });
     }
 
