@@ -1,69 +1,68 @@
-//https://brax.gg/project-1-create-your-own-private-blockchain/?utm_source=rss&utm_medium=rss&utm_campaign=project-1-create-your-own-private-blockchain
 const SHA256 = require('crypto-js/sha256');
 const BlockClass = require('./block.js');
 const bitcoinMessage = require('bitcoinjs-message');
 
-class Blockchain { //ok
+class Blockchain { //BLOCKCHAIN CLASS
     constructor() {
         this.chain = [];
         this.height = -1;
         this.initializeChain();
     }
 
-    async initializeChain() { //ok
+    async initializeChain() { //START BLOCKCHAIN WITH BLOCK GENESIS
         if( this.height === -1){
             let block = new BlockClass.Block({data: 'Genesis Block'});
             await this._addBlock(block);
         }
     }
 
-    getChainHeight() { //ok
+    getChainHeight() { //RESOLVE WITH BLOCKCHAIN HEIGHT (# OF BLOCKS)
         return new Promise((resolve, reject) => {
             resolve(this.height);
         });
     }
 
-    _addBlock(block) {
+    _addBlock(block) { //ADDS BLOCK ONTO BLOCKCHAIN
         let self = this;
         return new Promise(async (resolve, reject) => {
-            block.height = self.chain.length; //get current height
-            block.time = new Date().getTime().toString().slice(0,-3); //get current time
-            if(self.chain.length>0){
-                block.previousBlockHash = self.chain[self.chain.length-1].hash; //get previous hash
+            block.height = self.chain.length; //ADDS BLOCK HEIGHT (# OF BLOCKS IN THE ARRAY)
+            block.time = new Date().getTime().toString().slice(0,-3); //ADDS TIME NOW
+            if(self.chain.length>0){ //IF NOT GENESIS BLOCK
+                block.previousBlockHash = self.chain[self.chain.length-1].hash; //UPDATES PREVIOUS HASH
             }
-            block.hash = SHA256(JSON.stringify(block)).toString(); //calculate hash
-            //Validation
-            console.debug('validation of chain starts here');
-            let errors = await self.validateChain(); //call the validate chain method
+            block.hash = SHA256(JSON.stringify(block)).toString(); //CREATES BLOCK HASH
+            //VALIDATION    
+            console.debug('START');
+            let errors = await self.validateChain(); //INITIATES VALIDATE BLOCK METHOD
             console.log(errors)
-            console.debug('Validation of chain ended')
-            if (errors.length === 0 ){ //if no errors in blockchain
-                self.chain.push(block); //push new block
-                self.height++; //increment height
-                console.debug(block)
-                resolve(block) //resolve the new block
+            console.debug('END')
+            if (errors.length === 0 ){ //IF NO ERRORS FOUND
+                self.chain.push(block); //ADDS BLOCK
+                self.height++; //UPDATES BLOCKCHAIN HEIGHT
+                //console.debug(block) //CHECKS WHETHER CODE IS WORKING
+                resolve(block) //RESOLVES THE NEW BLOCK
             } else{
-                reject(errors);
+                reject(errors); //REJECTS
             }
         });
     }
 
-    requestMessageOwnershipVerification(address) { //ok
+    requestMessageOwnershipVerification(address) { //REQUESTS DDRESS VERIFICATION
         return new Promise((resolve) => {
             let message = `${address}:${new Date().getTime().toString().slice(0,-3)}:starRegistry`;
             resolve(message);
         });
     }
 
-    submitStar(address, message, signature, star) { //ok
+    submitStar(address, message, signature, star) { //POSTS STAR AND CHECKS WHETHER IT IS WITHIN THE TIME WINDOW
         let self = this;
         return new Promise(async (resolve, reject) => {
-            let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));
-            if ((parseInt(self.message.split(':')[1]) + (5*60*1000)) > currentTime) {
+            let currentTime = parseInt(new Date().getTime().toString().slice(0, -3)); //TIME NOW
+            if ((parseInt(self.message.split(':')[1]) + (5*60*1000)) > currentTime) { //IF TIME NOW LESS BLOCK TIME IS LESS THAN 5 MINUTES
                  if(bitcoinMessage.verify(message, address, signature)) {
-                    let block = new BlockClass.Block({"owner": address, "star": star});
+                    let block = new BlockClass.Block({"owner": address, "star": star}); //ADDS OWNER AND STAR PROPERTIES TO BLOCK'S BODY
                     let newBlock = await self._addBlock(block);
-                    resolve(newBlock);
+                    resolve(newBlock); //RESOLVES BY ADDING BLOCK
                 } else {
                     reject(Error("SIGNATURE IS NOT VALID")) 
                 }
@@ -74,43 +73,43 @@ class Blockchain { //ok
         });
     }
 
-    getBlockByHash(hash) {//ok
+    getBlockByHash(hash) { //GETS BLOCK BY PASSING HASH AS ARGUMENT
         let self = this;
         return new Promise((resolve, reject) => {
-            let block = self.chain.filter(p => p.hash === hash)[0];
+            let block = self.chain.filter(p => p.hash === hash)[0]; //SEARCHES IN THE BLOCKCHAIN FOR BLOCK WITH THE HASH ARGUMENT
             if(block){
-                resolve(block);
+                resolve(block); //RESOLVES BLOCK
             } else {
-                reject(Error("NO BLOCK FOUND"));
+                reject(Error("NO BLOCK FOUND")); // NO BLOCK FOUND
             }
         });
     }
 
-    getBlockByHeight(height) { //ok
+    getBlockByHeight(height) { //GETS BLOCK BY PASSING HEIGHT AS ARGUMENT
         let self = this;
         return new Promise((resolve, reject) => {
-            let block = self.chain.filter(p => p.height === height)[0];
+            let block = self.chain.filter(p => p.height === height)[0]; //SEARCHES IN THE BLOCKCHAIN FOR BLOCK WITH THE HEIGHT ARGUMENT
             if(block){
-                resolve(block);
+                resolve(block); //RESOLVES BLOCK
             } else {
-                resolve(null);
+                resolve(null); //NO BLOCK FOUND
             }
         });
     }
 
-    getStarsByWalletAddress (address) { //ok
+    getStarsByWalletAddress (address) { //GETS STARS BY WALLET ADDRESS
         let self = this;
-        let stars = [];
+        let stars = []; //ARRAY OF STARS
         return new Promise((resolve, reject) => {
             self.chain.forEach(async(b) => {
-                let star = await b.getBData(); //decoded star name
+                let star = await b.getBData(); //DECODE BLOCK'S BODY TO GET STAR AND OWNER
                 if(star){
-                    if (star.owner === address){
-                        stars.push(star);
+                    if (star.owner === address){ //IF THE OWNER HAS THE SAME WALLET ADDRESS
+                        stars.push(star); //ADDS DECODED BODY INTO STARS ARRAY
                     }
                 }
             });
-            resolve(stars);
+            resolve(stars); //RESOLVES STARS ARRAY
         });
     }
 
@@ -118,23 +117,19 @@ class Blockchain { //ok
         let self = this;
         let errorLog = [];
         return new Promise((resolve) => {
-            // Go through each block and make sure stored hash of
-            // previous block matches actual hash of previous block
             let validatePromises = [];
             self.chain.forEach((block, index) => {
                 if (block.height > 0) {
                     const previousBlock = self.chain[index - 1];
-                    if (block.previousBlockHash !== previousBlock.hash) {
-                        const errorMessage = `Block ${index} previousBlockHash set to ${block.previousBlockHash}, but actual previous block hash was ${previousBlock.hash}`;
+                    if (block.previousBlockHash !== previousBlock.hash) { //CHECKS WHETHER PREVIOUSBLOCKHASH IS DIFFERENT FROM HASH FROM BLOCK -1
+                        const errorMessage = `BLOCK ${index} HAS A DIFFERENT PREVIOUSBLOCKHASH VALUE - ${block.previousBlockHash} - FROM THE ACTUAL PREVIOUS BLOCK HASH - ${previousBlock.hash}`;
                         errorLog.push(errorMessage);
                     }
                 }
 
-                // Store promise to validate each block
+                //STORE PROMISSE
                 validatePromises.push(block.validate());
             });
-
-            // Collect results of each block's validate call
             Promise.all(validatePromises)
                 .then(validatedBlocks => {
                     validatedBlocks.forEach((valid, index) => {
@@ -144,7 +139,6 @@ class Blockchain { //ok
                             errorLog.push(errorMessage);
                         }
                     });
-
                     resolve(errorLog);
                 });
         });

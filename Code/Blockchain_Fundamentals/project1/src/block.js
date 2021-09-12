@@ -11,40 +11,35 @@ class Block {
 		this.previousBlockHash = null;                                  // Reference to the previous Block Hash
     }
     
-    validate() {
+    validate() { //VALIDATES HASH VALUE
         let self = this;
         return new Promise((resolve, reject) => {
             try {
-                // Save in auxiliary variable the current block hash
-                const currentHash = self.hash;
+                const currentHash = self.hash; //CREATES AUXILIARY VARIABLE
                 self.hash = null;
-                // Recalculate the hash of the Block
-                const newHash = SHA256(JSON.stringify(self)).toString();
+                const newHash = SHA256(JSON.stringify(self)).toString(); //RECALCULATES HASH
                 self.hash = currentHash;
-                // Comparing if the hashes changed and return true or false
-                resolve(currentHash === newHash);
+                resolve(currentHash === newHash); //COMPARES HASH AND RESOLVES WITH TRUE OR FALSE
             } catch (err) {
-                reject(new Error(err)); 
+                reject(new Error(err)); //REJECTS
             }
         });
     }
 
-    getBData() {
+    getBData() { //DECODES BLOCK'S BODY
         let self = this;
         return new Promise( async (resolve, reject) => {          
-            let enc_data = self.body;       // Getting the encoded data saved in the Block                                    
-            let dec_data = hex2ascii(enc_data); // Decoding the data to retrieve the JSON representation of the object
-            let decdata_in_JSON=JSON.parse(dec_data); // Parse the data to an object to be retrieve.
-            // Resolve with the data if the object isn't the Genesis block
-            if (self.height == 0) {
-                //This is the genesis block as height == 0
-                resolve("This is the Genesis block dude");
+            let encoded_data = self.body;       //LOADS BLOCK'S BODY INTO DATA VARIABLE
+            let decoded_data = hex2ascii(encoded_data); //DECODES BLOCK'S BODY FROM HEX TO ASCII
+            let decdata_in_JSON=JSON.parse(decoded_data); //GETS JAVASCRIPT OBJECT 
+            if (self.height == 0) { //IF GENESIS BLOCK
+                resolve("GENESIS BLOCK"); //GENESIS BLOCK
             } else {
-                resolve(decdata_in_JSON);
+                resolve(decdata_in_JSON); //RESOLVES DECODED DATA
             }
         });
 
     }
 }
 
-module.exports.Block = Block;                                           // Exposing the Block class as a module
+module.exports.Block = Block; // Exposing the Block class as a module
