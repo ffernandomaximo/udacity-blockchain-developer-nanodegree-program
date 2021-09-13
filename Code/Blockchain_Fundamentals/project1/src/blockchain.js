@@ -47,9 +47,10 @@ class Blockchain { //BLOCKCHAIN CLASS
         });
     }
 
-    requestMessageOwnershipVerification(address) { //REQUESTS DDRESS VERIFICATION
+    requestMessageOwnershipVerification(address) { //REQUESTS DDRESS VERIFICATION - A LEGAGY ADDRESS IS REQUIRED
+        //BITCOIN CORE: getnewaddress -addresstype legacy
         return new Promise((resolve) => {
-            let message = `${address}:${new Date().getTime().toString().slice(0,-3)}:starRegistry`;
+            let message = `${address}:${new Date().getTime().toString().slice(0,-3)}:starRegistry`; //MESSAGE TO BE SIGNED
             resolve(message);
         });
     }
@@ -58,16 +59,23 @@ class Blockchain { //BLOCKCHAIN CLASS
         let self = this;
         return new Promise(async (resolve, reject) => {
             let currentTime = parseInt(new Date().getTime().toString().slice(0, -3)); //TIME NOW
-            if ((parseInt(self.message.split(':')[1]) + (5*60*1000)) > currentTime) { //IF TIME NOW LESS BLOCK TIME IS LESS THAN 5 MINUTES
-                 if(bitcoinMessage.verify(message, address, signature)) {
+            console.debug(message) //IT WAS TRYING TO ACCESS "SELF.MESSAGE"
+            //console.debug((parseInt(message.split(':')[1]) + (5*60)), currentTime)
+            if ((parseInt(message.split(':')[1]) + (5*60)) > currentTime) { //IF TIME NOW LESS BLOCK TIME IS LESS THAN 5 MINUTES
+                console.debug("TRANSACTION TOOK LESS THAN 5 MINUTES")
+                console.debug(`"${message}"`, address, signature)
+                if(bitcoinMessage.verify(`"${message}"`, address, signature)) {
+                    console.debug("VERIFIED")
                     let block = new BlockClass.Block({"owner": address, "star": star}); //ADDS OWNER AND STAR PROPERTIES TO BLOCK'S BODY
                     let newBlock = await self._addBlock(block);
                     resolve(newBlock); //RESOLVES BY ADDING BLOCK
                 } else {
+                    console.debug("NOT VERIFIED")
                     reject(Error("SIGNATURE IS NOT VALID")) 
                 }
             }
             else {
+                console.debug("TRANSACTION TOOK MORE THAN 5 MINUTES")
                 reject(Error("TRANSACTION TOOK MORE THAN 5 MINUTES")) 
             }
         });
