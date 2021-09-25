@@ -31,7 +31,7 @@ var privateKeySenderHex = Buffer.from(privateKeySender, 'hex');
 
 async function createTransaction() {
     var rawTransaction = {
-        nonce: '0x'.concat(await sendingTransactionCount+1),
+        nonce: '0x'.concat(await sendingTransactionCount),
         gasPrice: '0x1000000015',
         gasLimit: '0x30000',
         to: receivingAccount,
@@ -44,7 +44,6 @@ async function createTransaction() {
 
 createTransaction().then(rawTransaction => {
     var tx = new EthereumTx(rawTransaction, {chain:'rinkeby'});
-    var transaction = new EthereumTx(rawTransaction);
 
     if(!web3.eth.net.isListening()){ //await web3@0.20.5
         console.log("notconnected");
@@ -52,9 +51,7 @@ createTransaction().then(rawTransaction => {
     } else {
         tx.sign(privateKeySenderHex);
         var serializedTx = tx.serialize();
-        transaction.sign(privateKeySenderHex)
-        var serializedTransaction = transaction.serialize();
-
+        
         web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex')) //750 seconds to be mined
         .on('receipt', console.log);
     }
