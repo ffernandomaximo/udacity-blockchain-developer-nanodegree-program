@@ -12,7 +12,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "chai": "^4.3.4",
     "openzeppelin-solidity": "^4.3.2",
+    "truffle": "^5.4.14",
     "truffle-hdwallet-provider": "^1.0.17"
+  },
+  "devDependencies": {
+    "@openzeppelin/test-helpers": "^0.5.15"
   }
 }

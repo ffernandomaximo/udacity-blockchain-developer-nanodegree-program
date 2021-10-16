@@ -10,8 +10,11 @@ import "../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
 contract SampleToken is ERC20 {
 
-    constructor(uint256 initialSupply) ERC20("Gold", "GLD") {
-        require(initialSupply > 0, "INITIAL_SUPPLY has to be greater than 0");
+    constructor(
+        string memory name,
+        string memory symbol,
+        uint256 initialSupply
+    ) ERC20(name, symbol) {
         _mint(msg.sender, initialSupply);
     }
 }
